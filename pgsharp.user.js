@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 PGSharpAutoReg
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.2
+// @version		 0.3
 // @description	 Auto register trial key of PGSharp
 // @author		 Vuu Van Tong
 // @match		 https://www.pgsharp.com/*
@@ -14,13 +14,14 @@
 /* Change log */
 // V0.1: First release version
 // V0.2: Improve the script the first name will contain the email prefix, able to process list of email
+// V0.3: Bug fix
 
 /* MODIFY VARIABLE */
 var email_domain = "@maildrop.cc";
 var reg_password = "111111111";
 var list_email = ["test1@maildrop.cc", "test2@maildrop.cc"];
 var list_email_idx = 0; // Start index of list email
-var generate_email = true; // If you want to use email from above list, set to false
+var enable_generate_email = true; // If you want to use email from above list, set to false
 
 /* DO NOT MODIFY FROM THIS LINE IF YOU DON"T UNDERSTAND */
 // Main function
@@ -142,7 +143,7 @@ function getCookie(cname) {
 }
 
 function save_current_mail() {
-	if(!generate_email) {
+	if(!enable_generate_email) {
 		list_email_idx = list_email_idx + 1;
 	}
 	var ck = getCookie("lastmail");
@@ -152,7 +153,7 @@ function save_current_mail() {
 
 function generate_next() {
 	var email_pre = "";
-	if(generate_email) {
+	if(enable_generate_email) {
 		email_pre = generate_email(10);
 		email = build_mail(email_pre);
 	} else {
