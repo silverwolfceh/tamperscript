@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name		 PGSharpAutoReg
-// @namespace	 https://fb.com/wolf.xforce
-// @version		 0.3
-// @description	 Auto register trial key of PGSharp
+// @namespace	         https://fb.com/wolf.xforce
+// @version		 0.4
+// @description	         Auto register trial key of PGSharp
 // @author		 Vuu Van Tong
 // @match		 https://www.pgsharp.com/*
 // @match		 https://manage.pgsharp.com/*
@@ -15,9 +15,10 @@
 // V0.1: First release version
 // V0.2: Improve the script the first name will contain the email prefix, able to process list of email
 // V0.3: Bug fix
+// V0.4: Able to select between generated email and from maillist.
 
 /* MODIFY VARIABLE */
-var email_domain = "@maildrop.cc";
+var email_domain = "@ericvuu.com";
 var reg_password = "111111111";
 var list_email = ["test1@maildrop.cc", "test2@maildrop.cc"];
 var list_email_idx = 0; // Start index of list email
@@ -28,13 +29,23 @@ var enable_generate_email = true; // If you want to use email from above list, s
 var email = "";
 var timer = undefined;
 var $ = window.jQuery;
-var display = "<div id='info'>Current time: <span id='realclock'></span> Status: <span id='err'></span> | <span id='hm'>Back home</span></div>";
+var running = "RUN";
+var display = "<div id='info'>Current time: <span id='realclock'></span> Status: <span id='err'></span> | <span id='hm'>Stop</span></div>";
 $(document).ready(function(){
 	setInterval(clock_update,1000);
 	$('body').append(display);
 	$("#info").css("position", "fixed").css("bottom", 0).css("left", "0").css("padding", "0").css("z-index", 9999).css("text-align","center");
 	$("#info").css("height","30px").css("font-size", 20).css("background","white").css("color","green").css("width","100%");
-	$("#hm").click(function() { back(); });
+	$("#hm").click(function(){
+        var state = GM_getValue(running, true);
+        if(state) {
+            GM_setValue(running, false);
+            $("#hm").text("Start");
+        } else {
+            GM_setValue(running, true);
+            $("#hm").text("Stop");
+        }
+    });
 	var currentdate = new Date();
 	var hrs = currentdate.getHours();
 	var min = currentdate.getMinutes();
@@ -60,19 +71,25 @@ function clock_update() {
 }
 
 function do_activate() {
-	var now = new Date();
-	var hrs = now.getHours();
-	var min = now.getMinutes();
-	var sec = now.getSeconds();
-	if(min % 5 == 4 && sec >= 55) {
-		console.log("Now, entering rush mode");
-		error("Go....");
-		back();
-	} else {
-		console.log("Not in time " + min + ":" + sec);
-		error("Waiting....");
-		setTimeout(do_activate,1000);
-	}
+    var state = GM_getValue(running, true);
+    if(state) {
+        var now = new Date();
+        var hrs = now.getHours();
+        var min = now.getMinutes();
+        var sec = now.getSeconds();
+        if(min % 5 == 4 && sec >= 55) {
+            console.log("Now, entering rush mode");
+            error("Go....");
+            back();
+        } else {
+            console.log("Not in time " + min + ":" + sec);
+            error("Waiting....");
+            setTimeout(do_activate,1000);
+        }
+    } else {
+        error("Paused");
+        setTimeout(do_activate,1000);
+    }
 }
 function error(msg) {
 	$("#err").text(msg);
