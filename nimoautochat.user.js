@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.1
+// @version		 0.2
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -21,6 +21,7 @@
 // ==/UserScript==
 /* Change log */
 // V0.1: First release version
+// V0.2: Fix bug
 
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
@@ -151,6 +152,7 @@ function logger(msg, lvl = 0, islist = false) {
 
 $(document).ready(function(){
    register_cbox();
+   clock_display();
    if(check_chatmsg_compability()) {
        main();
    }
@@ -240,6 +242,15 @@ function send_message(msg, idol_name) {
     }
 }
 
+function clock_display() {
+  var date = new Date;
+  var seconds = date.getSeconds();
+  var minutes = date.getMinutes();
+  var hour = date.getHours();
+  logger("Current time: " + hour + ":" + minutes + ":" + seconds);
+  setTimeout(clock_display, 1000);
+}
+
 function run_work() {
     var idol_name = get_idol_id();
     if(idol_name == NG) {
@@ -253,6 +264,8 @@ function run_work() {
     msg = prefix + msg;
     if(mode != MODE_OFFLINE) {
         send_message(msg, idol_name);
+    } else {
+      logger("Idol is offline", LOGGER_INFO, false);
     }
 }
 
@@ -261,6 +274,7 @@ function main() {
         run_work();
         setTimeout(main,msg_interval);
     } else {
-        setTimeout(main,1000);
+        logger("Wait for control action", LOGGER_INFO, false);
+        setTimeout(main, 1000);
     }
 }
