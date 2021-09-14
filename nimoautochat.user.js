@@ -21,7 +21,8 @@
 // ==/UserScript==
 /* Change log */
 // V0.1: First release version
-// V0.2: Fix bug
+// V0.2: Add clock bar
+// V0.3: Fix typo and clear the noti message for idol offline
 
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
@@ -35,7 +36,7 @@ var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha �
                "You feel sad? listen to the song. You feel happy 🥰? Follow and listen to many songs  ❤️❤️"
               ];
 var chatmsg_egg = ["Mọi người vào lụm trứng cho IDOL xin 1 follow chúc mọi người một ngày zui ze ❤️❤️❤️",
-                   "Please follow the streamer, we have a lot of egg will giving out you know?",
+                   "Please follow the streamer, we have a lot of eggs will be given out you know?",
                    "Chúc mọi người lụm được kim cương nha, yêu mọi người ❤️",
                    "Hey, good luck guys. Don't forget to follow IDOL, you will have more luck for sure ❤️",
                    "Trứng còn nhiều, từ từ lụm và chớ quên follow nha người ơi 😝"];
@@ -265,7 +266,7 @@ function run_work() {
     if(mode != MODE_OFFLINE) {
         send_message(msg, idol_name);
     } else {
-      logger("Idol is offline", LOGGER_INFO, false);
+      // Idol is offline. No action
     }
 }
 
@@ -274,7 +275,6 @@ function main() {
         run_work();
         setTimeout(main,msg_interval);
     } else {
-        logger("Wait for control action", LOGGER_INFO, false);
         setTimeout(main, 1000);
     }
 }
