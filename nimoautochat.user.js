@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.2
+// @version		 0.4
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -23,6 +23,7 @@
 // V0.1: First release version
 // V0.2: Add clock bar
 // V0.3: Fix typo and clear the noti message for idol offline
+// V0.4: Detect keywork demo
 
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
@@ -46,6 +47,12 @@ var chatmsg_offline = [ "Hi mọi người, IDOL sẽ live sớm thôi, cám ơn
                        "Chỉ còn vài phút nữa thôi, mọi người chờ cùng em nhé"
                        ];
 
+var keywords = {"hi" : "Xin chào bạn, chúc bạn nghe nhạc vui vẻ. Nếu hay thì cho streamer 1 follow ạ ❤️",
+        "minhii" : "Chị MinHii siêu cute, hát siêu hay đó bạn !!"
+    };
+var msg_item;
+var last_msg = "";
+var kw_enable = true;
 var prefix = "[🔥Auto] ";
 
 var idols = {"922745114" : "MinHii🎹", "177713304" : "DontCry"};
@@ -154,10 +161,42 @@ function logger(msg, lvl = 0, islist = false) {
 $(document).ready(function(){
    register_cbox();
    clock_display();
+   msg_items = document.getElementsByClassName('nimo-room__chatroom__message-item');
+   keyword_check();
    if(check_chatmsg_compability()) {
        main();
    }
 });
+
+function get_welcome_msg(msg) {
+    msg = msg.toLowerCase();
+    if(msg in keywords) {
+        return keywords[msg].replaceAll("IDOL", get_idol_id());
+    } else {
+        return "";
+    }
+}
+
+function keyword_check() {
+    if(kw_enable) {
+        if(cbox_is_playable()) {
+            try{
+                var msg = msg_items[msg_items.length-1].getElementsByClassName("n-as-vtm")[0].innerText;
+                if(msg != last_msg) {
+                    last_msg = msg;
+                    wlcm_msg = get_welcome_msg(last_msg);
+                    if(wlcm_msg != "") {
+                        send_message(wlcm_msg, "WELCOME MSG");
+                    }
+                }
+            } catch (error) {
+        
+            }
+        }
+        setTimeout(keyword_check, 1000);
+    }
+    
+}
 
 function check_chatmsg_compability() {
     var result = true;
@@ -240,7 +279,9 @@ function send_message(msg, idol_name) {
 
     if(step == 2) {
         logger("Sending auto message for IDOL " + idol_name, LOGGER_INFO);
+        return true;
     }
+    return false;
 }
 
 function clock_display() {
