@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.4
+// @version		 0.5
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
