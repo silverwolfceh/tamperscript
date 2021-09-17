@@ -24,7 +24,7 @@
 // V0.2: Add clock bar
 // V0.3: Fix typo and clear the noti message for idol offline
 // V0.4: Detect keywork demo
-
+// V0.5: Add autopause stream and autoreload
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
                "Hi everyone, welcome! Please also follow IDOL to be chilled with songs 😎",
@@ -48,9 +48,12 @@ var chatmsg_offline = [ "Hi mọi người, IDOL sẽ live sớm thôi, cám ơn
                        ];
 
 var keywords = {"hi" : "Xin chào bạn, chúc bạn nghe nhạc vui vẻ. Nếu hay thì cho streamer 1 follow ạ ❤️",
-        "minhii" : "Chị MinHii siêu cute, hát siêu hay đó bạn !!"
+        "minhii" : "Chị MinHii siêu cute, hát siêu hay đó bạn !!",
+        "tina" : "Chị Tina là siêu mẫu, hát hay nữa.",
+        "tùng" : "Anh Tùng là admin mà sợ streamer hơn user nữa đó hahha",
+        "minhiifamily" : "Ừm, Minhii Family là một gia đình siêu xịn xò đó nha. Nhìn avatar xem :))"
     };
-var msg_item;
+var msg_items;
 var last_msg = "";
 var kw_enable = true;
 var prefix = "[🔥Auto] ";
@@ -63,6 +66,8 @@ var MODE_NORMAL = "normal";
 var msg_interval = 20000;
 var chatmsg = {[MODE_OFFLINE]: chatmsg_offline, [MODE_EGG]: chatmsg_egg, [MODE_NORMAL]:  chatmsg_normal};
 var timeintervals = {[MODE_OFFLINE]: 10000, [MODE_EGG]: 60000, [MODE_NORMAL]:  120000};
+
+var reload_after_second = 1*60*60*1000; // Reload after 1 hour
 
 /*--------------CONTROL_BOX AND LOGGER LIBRARY-------------*/
 var cbox_model = `
@@ -161,12 +166,25 @@ function logger(msg, lvl = 0, islist = false) {
 $(document).ready(function(){
    register_cbox();
    clock_display();
+   setTimeout(reload_stream, reload_after_second); // Prevent deadlock
    msg_items = document.getElementsByClassName('nimo-room__chatroom__message-item');
    keyword_check();
+   pause_stream();
    if(check_chatmsg_compability()) {
        main();
    }
 });
+
+function reload_stream() {
+    location.reload();
+}
+function pause_stream() {
+    if(document.getElementsByClassName("nimo-icon nimo-icon-web-pause").length == 0) {
+        setTimeout(pause_stream, 2000);
+    } else {
+        document.getElementsByClassName("nimo-icon nimo-icon-web-pause")[0].click();
+    }
+}
 
 function get_welcome_msg(msg) {
     msg = msg.toLowerCase();
@@ -184,18 +202,17 @@ function keyword_check() {
                 var msg = msg_items[msg_items.length-1].getElementsByClassName("n-as-vtm")[0].innerText;
                 if(msg != last_msg) {
                     last_msg = msg;
-                    wlcm_msg = get_welcome_msg(last_msg);
+                    var wlcm_msg = get_welcome_msg(last_msg);
                     if(wlcm_msg != "") {
                         send_message(wlcm_msg, "WELCOME MSG");
                     }
                 }
             } catch (error) {
-        
+                console.log("Errror");
             }
         }
         setTimeout(keyword_check, 1000);
     }
-    
 }
 
 function check_chatmsg_compability() {
