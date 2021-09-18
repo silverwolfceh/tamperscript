@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.5
+// @version		 0.6
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -25,6 +25,7 @@
 // V0.3: Fix typo and clear the noti message for idol offline
 // V0.4: Detect keywork demo
 // V0.5: Add autopause stream and autoreload
+// V0.6: Add autoloading keyword from github
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
                "Hi everyone, welcome! Please also follow IDOL to be chilled with songs 😎",
@@ -47,12 +48,23 @@ var chatmsg_offline = [ "Hi mọi người, IDOL sẽ live sớm thôi, cám ơn
                        "Chỉ còn vài phút nữa thôi, mọi người chờ cùng em nhé"
                        ];
 
-var keywords = {"hi" : "Xin chào bạn, chúc bạn nghe nhạc vui vẻ. Nếu hay thì cho streamer 1 follow ạ ❤️",
-        "minhii" : "Chị MinHii siêu cute, hát siêu hay đó bạn !!",
-        "tina" : "Chị Tina là siêu mẫu, hát hay nữa.",
-        "tùng" : "Anh Tùng là admin mà sợ streamer hơn user nữa đó hahha",
-        "minhiifamily" : "Ừm, Minhii Family là một gia đình siêu xịn xò đó nha. Nhìn avatar xem :))"
-    };
+var cmd = {"!rl" : load_keywords, "!ks" : keywords_status};
+// var keywords = {"hi" : "Xin chào bạn, chúc bạn nghe nhạc vui vẻ. Nếu hay thì cho streamer 1 follow ạ ❤️",
+//         "minhii" : "Chị MinHii siêu cute, hát siêu hay đó bạn !!",
+//         "tina" : "Chị Tina là siêu mẫu, hát hay nữa.",
+//         "tùng" : "Anh Tùng là admin mà sợ Idol ban nhất room. Hài không?",
+//         "minhiifamily" : "Ừm, Minhii Family là một gia đình siêu xịn xò đó nha. Nhìn avatar xem :))",
+//         "yutin" : "Người anh 10 ngày thì 9 ngày ngủ sofa",
+//         "vu" : "Ờm, tui không rõ tui là người hay là bot nữa. Hay gọi là trưởng ban kỹ thuật của Minhii's Family nhé",
+//         "!fl1" : "Cám ơn bạn đã follow Minhii nha. Chúc bạn có một thời gian nghe nhạc thật vui",
+//         "!fl2" : "Thanks for following idol Minhii. We are happy to have you here. Please enjoy the music",
+//         "p" : "Heart beat...",
+//         "duyn" : "Là người chị em cũng nhau đập 'đá' của Minhii idol đó ạ",
+//         "!pk": "Hello mọi người, giúp idol PK đi mọi người ơi. Cám ơn mọi người 🥰",
+//         "!pke" : "Hello, please help idol in this PK. Thanks so much 🥰"
+//     };
+var keywords;
+var keywords_load_finished = false;
 var msg_items;
 var last_msg = "";
 var kw_enable = true;
@@ -65,7 +77,7 @@ var MODE_OFFLINE = "offline";
 var MODE_NORMAL = "normal";
 var msg_interval = 20000;
 var chatmsg = {[MODE_OFFLINE]: chatmsg_offline, [MODE_EGG]: chatmsg_egg, [MODE_NORMAL]:  chatmsg_normal};
-var timeintervals = {[MODE_OFFLINE]: 10000, [MODE_EGG]: 60000, [MODE_NORMAL]:  120000};
+var timeintervals = {[MODE_OFFLINE]: 10000, [MODE_EGG]: 180000, [MODE_NORMAL]:  5*60*1000};
 
 var reload_after_second = 1*60*60*1000; // Reload after 1 hour
 
@@ -165,8 +177,8 @@ function logger(msg, lvl = 0, islist = false) {
 
 $(document).ready(function(){
    register_cbox();
-   clock_display();
-   setTimeout(reload_stream, reload_after_second); // Prevent deadlock
+//    clock_display();
+   load_keywords();
    msg_items = document.getElementsByClassName('nimo-room__chatroom__message-item');
    keyword_check();
    pause_stream();
@@ -175,6 +187,30 @@ $(document).ready(function(){
    }
 });
 
+function keywords_status() {
+    if(keywords_load_finished) {
+        console.log("Loaded finished");
+    } else {
+        console.log("Loading....");
+    }
+}
+
+function load_keywords() {
+    console.log("Start loading keywords...")
+    keywords_load_finished = false;
+    var http = new XMLHttpRequest;
+    var url = "https://raw.githubusercontent.com/silverwolfceh/tamperscript/main/keywords.json";
+    http.open("GET", url, !0);
+    http.onreadystatechange = function() {
+        if (4 == http.readyState && 200 == http.status) {
+            var json_data = JSON.parse(http.responseText);
+            keywords = json_data;
+            keywords_load_finished = true;
+            console.log("Finished loading keywords...")
+        }
+    };
+    http.send();
+}
 function reload_stream() {
     location.reload();
 }
@@ -188,6 +224,10 @@ function pause_stream() {
 
 function get_welcome_msg(msg) {
     msg = msg.toLowerCase();
+    if(msg in cmd) {
+        cmd[msg]();
+        return "";
+    }
     if(msg in keywords) {
         return keywords[msg].replaceAll("IDOL", get_idol_id());
     } else {
