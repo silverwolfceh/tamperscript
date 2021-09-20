@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.6
+// @version		 0.8
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -26,6 +26,8 @@
 // V0.4: Detect keywork demo
 // V0.5: Add autopause stream and autoreload
 // V0.6: Add autoloading keyword from github
+// V0.7: Add method to check last message sent or not
+// V0.8: Prevent the script go to sleep
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
                "Hi everyone, welcome! Please also follow IDOL to be chilled with songs 😎",
@@ -77,7 +79,7 @@ var MODE_OFFLINE = "offline";
 var MODE_NORMAL = "normal";
 var msg_interval = 20000;
 var chatmsg = {[MODE_OFFLINE]: chatmsg_offline, [MODE_EGG]: chatmsg_egg, [MODE_NORMAL]:  chatmsg_normal};
-var timeintervals = {[MODE_OFFLINE]: 10000, [MODE_EGG]: 180000, [MODE_NORMAL]:  5*60*1000};
+var timeintervals = {[MODE_OFFLINE]: 1*60*1000, [MODE_EGG]: 180000, [MODE_NORMAL]:  5*60*1000};
 
 var reload_after_second = 1*60*60*1000; // Reload after 1 hour
 
@@ -234,13 +236,22 @@ function get_welcome_msg(msg) {
         return "";
     }
 }
-
+function is_lastmessage_sent() {
+    try {
+        if(document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1")[0].value != '') {
+            return true;
+        }
+    } catch (error) {
+        console.log("Error in check the last message");
+    }
+    return false;
+}
 function keyword_check() {
     if(kw_enable) {
         if(cbox_is_playable()) {
             try{
                 var msg = msg_items[msg_items.length-1].getElementsByClassName("n-as-vtm")[0].innerText;
-                if(msg != last_msg) {
+                if(msg != last_msg || !is_lastmessage_sent()) {
                     last_msg = msg;
                     var wlcm_msg = get_welcome_msg(last_msg);
                     if(wlcm_msg != "") {
@@ -341,6 +352,14 @@ function send_message(msg, idol_name) {
     return false;
 }
 
+function send_message_offline(msg) {
+    try {
+        document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1")[0].value = msg;
+    } catch (error) {
+
+    }
+}
+
 function clock_display() {
   var date = new Date;
   var seconds = date.getSeconds();
@@ -364,7 +383,7 @@ function run_work() {
     if(mode != MODE_OFFLINE) {
         send_message(msg, idol_name);
     } else {
-      // Idol is offline. No action
+        send_message_offline(msg); // Just keep some idle activity
     }
 }
 
