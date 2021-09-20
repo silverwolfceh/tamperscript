@@ -28,6 +28,8 @@
 // V0.6: Add autoloading keyword from github
 // V0.7: Add method to check last message sent or not
 // V0.8: Prevent the script go to sleep
+var $ = window.jQuery;
+
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
                "Hi everyone, welcome! Please also follow IDOL to be chilled with songs 😎",
                "Mọi người vào chơi vui vẻ, xin 1 cái follow là được rồi ạ ❤️❤️❤️",
