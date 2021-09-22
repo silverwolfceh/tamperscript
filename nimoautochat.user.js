@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.8
+// @version		 0.9
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -28,6 +28,7 @@
 // V0.6: Add autoloading keyword from github
 // V0.7: Add method to check last message sent or not
 // V0.8: Prevent the script go to sleep
+// V0.9: Undo the auto-send in offline mode and add kw_reloadcallback to prevent deadlock
 var $ = window.jQuery;
 var chatmsg_normal = ["Mọi người vào rom cho IDOL xin 1 cái follow nha ❤️",
                "Hi everyone, welcome! Please also follow IDOL to be chilled with songs 😎",
@@ -197,6 +198,10 @@ function keywords_status() {
     }
 }
 
+function reloadkw_callback() {
+	send_message("[BOT] KW reload successfuly", "WELCOME MSG");
+}
+
 function load_keywords() {
     console.log("Start loading keywords...")
     keywords_load_finished = false;
@@ -209,6 +214,7 @@ function load_keywords() {
             keywords = json_data;
             keywords_load_finished = true;
             console.log("Finished loading keywords...")
+			reloadkw_callback();
         }
     };
     http.send();
@@ -383,7 +389,7 @@ function run_work() {
     if(mode != MODE_OFFLINE) {
         send_message(msg, idol_name);
     } else {
-        send_message_offline(msg); // Just keep some idle activity
+        //send_message_offline(msg); // Just keep some idle activity
     }
 }
 
