@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoAutoChat
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.9
+// @version		 1.0
 // @description	 Nimo autobot
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/live/*
@@ -73,7 +73,6 @@ var reload_after_second = 1*60*60*1000; // Reload after 1 hour
 
 $(document).ready(function(){
    register_cbox();
-//    clock_display();
    load_keywords();
    msg_items = document.getElementsByClassName('nimo-room__chatroom__message-item');
    keyword_check();
@@ -92,7 +91,7 @@ function keywords_status() {
 }
 
 function reloadkw_callback() {
-	send_message("[BOT] KW reload successfuly", "WELCOME MSG");
+
 }
 
 function load_keywords() {
@@ -138,12 +137,12 @@ function get_welcome_msg(msg) {
 function is_lastmessage_sent() {
     try {
         if(document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1")[0].value != '') {
-            return true;
+            return false;
         }
     } catch (error) {
         console.log("Error in check the last message");
     }
-    return false;
+    return true;
 }
 function keyword_check() {
     if(kw_enable) {
@@ -212,7 +211,7 @@ function egg_avaiable() {
 function is_idol_offline() {
     if(document.getElementsByClassName("nimo-anchor-broadcast-game nimo-rm_type n-fx0 n-as-mrgh c2").length > 0) {
         var data = document.getElementsByClassName("nimo-anchor-broadcast-game nimo-rm_type n-fx0 n-as-mrgh c2")[0].innerText;
-        if(data.indexOf("ago streamed") != -1) {
+        if(data.indexOf("ago streamed") != -1 || data.indexOf("đã live stream") != -1) {
             return true;
         }
     }
@@ -234,38 +233,15 @@ function change_interval(mode) {
 }
 
 function send_message(msg, idol_name) {
-    var step = 0;
-    if(document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1").length > 0) {
-        document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1")[0].value = msg;
-        step = step + 1;
-    }
-    if(document.getElementsByClassName("nimo-btn nimo-chat-box__send-btn n-fx0 nimo-btn-secondary").length > 0) {
-        document.getElementsByClassName("nimo-btn nimo-chat-box__send-btn n-fx0 nimo-btn-secondary")[0].click();
-        step = step + 1;
-    }
-
-    if(step == 2) {
-        logger("Sending auto message for IDOL " + idol_name, LOGGER_INFO);
-        return true;
-    }
-    return false;
-}
-
-function send_message_offline(msg) {
     try {
         document.getElementsByClassName("nimo-room__chatroom__chat-box__input nimo-chat-box__input n-as-scroll c1")[0].value = msg;
+        document.getElementsByClassName("nimo-btn nimo-chat-box__send-btn n-fx0 nimo-btn-secondary")[0].click();
+        logger("Sending auto message for IDOL " + idol_name, LOGGER_INFO);
+        return true;
     } catch (error) {
-
+        
     }
-}
-
-function clock_display() {
-  var date = new Date;
-  var seconds = date.getSeconds();
-  var minutes = date.getMinutes();
-  var hour = date.getHours();
-  logger("Current time: " + hour + ":" + minutes + ":" + seconds);
-  setTimeout(clock_display, 1000);
+    return false;
 }
 
 function run_work() {
@@ -282,7 +258,7 @@ function run_work() {
     if(mode != MODE_OFFLINE) {
         send_message(msg, idol_name);
     } else {
-        //send_message_offline(msg); // Just keep some idle activity
+        
     }
 }
 
