@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoLiveEgg
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.2
+// @version		 0.3
 // @description	 Nimo TV Auto Get Egg
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/*
@@ -13,6 +13,7 @@
 /* Change log */
 // V0.1: First release version
 // V0.2: Fast mode and normal mode switcher
+// V0.3: Fix bug and add log to console
 
 var $ = window.jQuery;
 var mode_interval = {"fast" : 100, "normal" : 1000, "noegg" : 5000, "pausestream" : 8000};
@@ -98,6 +99,7 @@ function log_w(msg, msg1 = "") {
     if(msg1 != "") {
         out = out + " [" + msg1 + "]";
     }
+    console.log(out);
 }
 
 function pauseable() {
@@ -121,7 +123,7 @@ function pause_stream() {
 
 function loop() {
     var mode = check_mode();
-    if(last_mode != last_mode) {
+    if(mode != last_mode) {
         log_w("Switch to " + mode + " from " + last_mode);
         last_mode = mode;
     }
