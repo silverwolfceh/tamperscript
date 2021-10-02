@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoLiveEgg
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.1
+// @version		 0.2
 // @description	 Nimo TV Auto Get Egg
 // @author		 Vuu Van Tong
 // @match		 https://www.nimo.tv/*
@@ -12,21 +12,56 @@
 // ==/UserScript==
 /* Change log */
 // V0.1: First release version
+// V0.2: Fast mode and normal mode switcher
 
 var $ = window.jQuery;
-var clmcounter = 0;
-var clmretrymax = 20;
-var revinterval = 500; //ms
-var waitinterval = 5000; //ms
-var channel_url = [""];
+var mode_interval = {"fast" : 100, "normal" : 1000, "noegg" : 5000, "pausestream" : 8000};
+var MODE_FAST = "fast";
+var MODE_NORMAL = "normal";
+var MODE_NOEGG = "noegg";
+var PAUSE_STREAM = "pausestream";
+var egg_click_interval = mode_interval[MODE_NORMAL];
+var mode_switch_enable = 20; // <= 20 seconds will change to fast mode
+var last_mode = MODE_NOEGG;
+// Never pause the stream on these channel
+var channel_url = ["https://www.nimo.tv/live/922745114"];
+// Url that not support
 var exclude_url = ["https://www.nimo.tv/mkt/act/super/coin_box_lottery"];
+
 $(document).ready(function(){
 
     if(active_condition()) {
-        setTimeout(pause_stream, 8000);
+        setTimeout(pause_stream, mode_interval[PAUSE_STREAM]);
         main_func();
     }
 })
+
+function get_current_egg_time() {
+    try {
+        var eggtime = document.getElementsByClassName("nimo-box-gift__box__cd n-as-fs12")[0].innerText;
+        var minutes = eggtime.split(":")[0];
+        var seconds = eggtime.split(":")[1];
+        seconds = parseInt(seconds) + parseInt(minutes) * 60;
+        return seconds;
+    } catch(error) {
+        return -1;
+    }
+}
+function check_mode() {
+    if(!egg_avaiable() && !receive_btn_avaiable()) {
+        return MODE_NOEGG;
+    } else if(!egg_avaiable()) {
+        return MODE_FAST;
+    } else {
+        var time = get_current_egg_time();
+        if(time >= 0 && time <= mode_switch_enable) {
+            return MODE_FAST;
+        } else {
+            return MODE_NORMAL;
+        }
+    }
+    
+}
 
 function active_condition() {
     var active = true;
@@ -59,7 +94,7 @@ function receive_btn_avaiable() {
 }
 
 function log_w(msg, msg1 = "") {
-    var out = "[WOLF] " + msg;
+    var out = "[Egg] " + msg;
     if(msg1 != "") {
         out = out + " [" + msg1 + "]";
     }
@@ -84,17 +119,22 @@ function pause_stream() {
     }
 }
 
-function check_and_receive_egg() {
-    receive();
-    if(egg_avaiable()) {
-        setTimeout(check_and_receive_egg, revinterval);
-    } else {
-        log_w("Egg not available, scheduled to check");
-        setTimeout(check_and_receive_egg, waitinterval);
+function loop() {
+    var mode = check_mode();
+    if(last_mode != last_mode) {
+        log_w("Switch to " + mode + " from " + last_mode);
+        last_mode = mode;
     }
+    if(mode == MODE_NOEGG) {
+        // No egg, don't need to received it.
+        log_w("No egg");
+    } else {
+        receive_with_fault();
+    }
+    setTimeout(loop, mode_interval[mode]);
 }
 
-function receive() {
+function receive_with_fault() {
     try {
         document.getElementsByClassName("nimo-box-gift__box__cd")[0].click();
         document.getElementsByClassName("nimo-box-gift__box__cd")[0].click();
@@ -112,5 +152,5 @@ function receive() {
 
 function main_func() {
     log_w("Started to obsever");
-    check_and_receive_egg();
+    loop();
 }
