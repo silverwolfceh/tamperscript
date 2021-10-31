@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name		 NimoChatRemoteLoading
 // @namespace	 https://fb.com/wolf.xforce
-// @version		 0.4
+// @version		 0.5
 // @@updateURL   https://raw.githubusercontent.com/silverwolfceh/tamperscript/main/nimoautochatrm.user.js
 // @description	 Nimo chat remote loading
 // @author		 Vuu Van Tong
@@ -16,9 +16,10 @@
 // V0.2: Refine code, adding bootstrap button
 // V0.3: Fix bug
 // V0.4: Promise loading style
+// V0.5: Change url
 
 var $ = window.jQuery;
-var cdn = "https://cdn.jsdelivr.net/gh/silverwolfceh/tamperscript/";
+var cdn = "https://silverwolfceh.github.io/cdnjs/";
 
 $(document).ready(function(){
     var cachev = get_random(0,10000);
@@ -28,7 +29,7 @@ $(document).ready(function(){
         return load_script_promise(cdn + "controlbox.js?v=" + cachev);
     })
     .then(function(rs) {
-        return load_script_promise(cdn + "nimoautochat.user.js?v=" + cachev);
+        return load_script_promise(cdn + "nimoautochat.js?v=" + cachev);
     })
     .catch(err => location.reload);
 });
