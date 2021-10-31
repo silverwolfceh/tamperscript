@@ -153,6 +153,7 @@ function keyword_check() {
                     last_msg = msg;
                     var wlcm_msg = get_welcome_msg(last_msg);
                     if(wlcm_msg != "") {
+			last_msg = wlcm_msg;
                         send_message(wlcm_msg, "WELCOME MSG");
                     }
                 }
